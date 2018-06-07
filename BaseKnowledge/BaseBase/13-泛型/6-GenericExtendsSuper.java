@@ -9,7 +9,7 @@ import java.util.*;
 */
 
 
-class  GenericDemo6
+class GenericExtends
 {
 	public static void main(String[] args) 
 	{

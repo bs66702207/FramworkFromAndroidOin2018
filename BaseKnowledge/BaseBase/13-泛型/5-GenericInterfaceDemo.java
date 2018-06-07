@@ -22,7 +22,7 @@ class InterImpl<T> implements Inter<T>
 		System.out.println("show :"+t);
 	}
 }
-class GenericDemo5 
+class GenericInterfaceDemo
 {
 	public static void main(String[] args) 
 	{

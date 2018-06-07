@@ -1,12 +1,10 @@
-
 import java.util.*;
-
 /*
 泛型：JDK1.5版本以后出现新特性。用于解决安全问题，是一个类型安全机制。
 
 好处
 1.将运行时期出现问题ClassCastException，转移到了编译时期。，
-	方便于程序员解决问题。让运行时问题减少，安全。，
+    方便于程序员解决问题。让运行时问题减少，安全。，
 
 2，避免了强制转换麻烦。
 
@@ -21,14 +19,9 @@ import java.util.*;
 其实<> 就是用来接收类型的。
 
 当使用集合时，将集合中要存储的数据类型作为参数传递到<>中即可。
-
-
-
-
-
 */
 
-class GenericDemo 
+class GenericDemo1
 {
 	public static void main(String[] args) 
 	{

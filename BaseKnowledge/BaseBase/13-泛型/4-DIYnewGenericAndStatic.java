@@ -43,7 +43,7 @@ class Demo<T>
 		System.out.println("method:"+t);
 	}
 }
-class GenericDemo4 
+class DIYnewGenericAndStatic
 {
 	public static void main(String[] args) 
 	{
