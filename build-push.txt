@@ -1,0 +1,20 @@
+adb push out/target/product/colombo/system/framework/framework-res.apk /system/framework/framework-res.apk
+adb push out/target/product/colombo/system/framework/arm64/boot.art   /system/framework/arm64/boot.art
+adb push out/target/product/colombo/system/framework/arm64/boot.oat /system/framework/arm64/boot.oat
+adb push out/target/product/colombo/system/framework/framework.jar /system/framework/framework.jar
+adb push out/target/product/colombo/system/framework/services.jar /system/framework/services.jar
+adb push out/target/product/colombo/system/framework/oat/arm64/services.odex /system/framework/oat/arm64/services.odex
+adb push out/target/product/colombo/system/framework/smartisanos.jar /system/framework/smartisanos.jar
+adb push out/target/product/colombo/system/framework/framework-smartisanos-res/framework-smartisanos-res.apk /system/framework/framework-smartisanos-res/framework-smartisanos-res.apk
+adb shell rm -r /data/dalvik-cache
+adb reboot
+
+
+make -j4 core-all core-oj core-libart //libcore 
+push-libcore() {
+adb push ~/new-disk/workspace/source_codes/trident/dvt/1.rom/out/target/product/trident/system/framework/framework.jar /system/framework/framework.jar
+adb push ~/new-disk/workspace/source_codes/trident/dvt/1.rom/out/target/product/trident/system/framework/arm /system/framework/
+adb push ~/new-disk/workspace/source_codes/trident/dvt/1.rom/out/target/product/trident/system/framework/arm64 /system/framework/
+adb push ~/new-disk/workspace/source_codes/trident/dvt/1.rom/out/target/product/trident/system/framework/core-libart.jar /system/framework/
+adb push ~/new-disk/workspace/source_codes/trident/dvt/1.rom/out/target/product/trident/system/framework/core-oj.jar /system/framework/
+}
