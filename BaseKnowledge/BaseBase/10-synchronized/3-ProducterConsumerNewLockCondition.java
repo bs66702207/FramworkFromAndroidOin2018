@@ -12,7 +12,7 @@ condition_pro.signal(); condition_con.signal();
 
 import java.util.concurrent.locks.*;
 
-class ProducterConsumerNewLock
+class ProducterConsumerNewLockCondition
 {
 	public static void main(String[] args)
 	{

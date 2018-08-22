@@ -1,4 +1,4 @@
-//notifyAll使用方法
+//notifyAll使用方法，notifyAll()就会释放所有的锁
 
 class ProducterConsumerDemo
 {
@@ -17,6 +17,8 @@ class ProducterConsumerDemo
 		t2.start();
 		t3.start();
 		t4.start();
+		
+		//r.boardcast();
 	}
 }
 
@@ -45,11 +47,18 @@ class Resource
 		//if(!flag)
 		while(!flag)
 			try{this.wait();}catch(Exception e){}
-		System.out.println(Thread.currentThread().getName()+"...消费者......"+this.name);
+		System.out.println(Thread.currentThread().getName()+"...消费者..."+this.name);
 		flag = false;
 		//this.notify();
 		this.notifyAll();
 	}
+
+	public synchronized void boardcast()
+	{
+		try{Thread.sleep(5000);}catch(InterruptedException e){e.printStackTrace();}
+		this.notifyAll();
+	}
+
 }
 
 class Producter implements Runnable
