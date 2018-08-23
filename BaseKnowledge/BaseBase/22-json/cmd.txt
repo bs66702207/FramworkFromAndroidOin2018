@@ -1,0 +1,3 @@
+javac 1-JsonSimpleDemo.java -classpath ./org.json.jar
+目前读有点问题
+java -classpath ./org.json.jar:./ JsonSimpleDemo

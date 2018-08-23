@@ -35,11 +35,16 @@ class ArrayListTest
 		*/
 
 		/**/
+		
+		sop(al);
+		al.remove("java01");
+		sop(al);
+		al.clear();
 		sop(al);
 		
-		al = singleElement(al);
+		//al = singleElement(al);
 
-		sop(al);
+		//sop(al);
 		
 
 	}
