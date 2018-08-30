@@ -26,7 +26,7 @@ class Outer
 	}
 }
 
-class StaticInnerClassDemo
+class InnerClassStaticVarDemo
 {
 	public static void main(String[] args)
 	{
