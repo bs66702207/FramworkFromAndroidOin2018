@@ -36,11 +36,13 @@ class AbstractDemo
 {
 	public static void main(String[] args)
 	{
+	//	Student S = new Student();//error
 		BaseStudent BS = new BaseStudent();
 		AdvBaseStudent ABS = new AdvBaseStudent();
 		new BaseStudent().study();
 		new BaseStudent().study();
 		BS.study();
 		ABS.study();
+	//	S.sleep();
 	}
 }
