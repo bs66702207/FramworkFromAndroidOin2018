@@ -9,6 +9,7 @@ public class Test1 {
 		OneTask task2 = new OneTask(2);
 		OneTask task3 = new OneTask(3);
 
+		System.out.println("start in main thread..." + Thread.currentThread().getId() + "name:" + Thread.currentThread().getName());
 if(1 == 0) {
 
 		timer.schedule(new OneTask(1), 5000);// 5秒后启动任务
@@ -48,7 +49,7 @@ if(1 == 0) {
 		task3.cancel();
 		System.out.println("cancel task3");
 */
-		try{Thread.sleep(10000);}catch(InterruptedException e){e.printStackTrace();}
+		try{Thread.sleep(100000);}catch(InterruptedException e){e.printStackTrace();}
 		timer.cancel();//这个重要必须cancel！
 		System.out.println("end in main thread...");
 	}

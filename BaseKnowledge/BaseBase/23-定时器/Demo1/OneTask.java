@@ -9,7 +9,7 @@ public class OneTask extends TimerTask {
 
 	@Override
 	public void run() {
-		System.out.println("线程"+ id + ": 正在 执行。。");
+		System.out.println("线程Id: " + Thread.currentThread().getId() + ", 线程name: " + Thread.currentThread().getName() + ", id: " + id + ", 正在 执行。。");
 		//System.gc();
 	}
 }
