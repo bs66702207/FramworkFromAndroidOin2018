@@ -30,6 +30,15 @@ class Ticket implements Runnable//extends Thread
 
 class SellTickets
 {
+
+	public static void test() {
+		System.out.println("test!");
+	}
+
+	public static void addRunable(Runnable r) {
+		System.out.println("addRunable!");
+	}
+
 	public static void main(String[] args)
 	{
 		Ticket t = new Ticket();
@@ -41,6 +50,14 @@ class SellTickets
 		t2.start();
 		t3.start();
 		t4.start();
+
+		Thread lambda = new Thread(() -> test());
+		lambda.run();
+
+		addRunable( ()-> {
+			test();
+			test();
+		});
 		
 	}
 }
