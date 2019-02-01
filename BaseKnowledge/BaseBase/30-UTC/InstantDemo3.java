@@ -2,6 +2,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 public class InstantDemo3 {
 
@@ -20,6 +21,14 @@ public class InstantDemo3 {
 			targetDate.get(Calendar.MINUTE) + ":" +
 			targetDate.get(Calendar.SECOND));
 
+		targetDate.setTimeZone(TimeZone.getTimeZone("UTC"));
+		System.out.println("targetDate set to " +
+			targetDate.get(Calendar.YEAR) + "-" +
+			(targetDate.get(Calendar.MONTH) + 1) + "-" +
+			targetDate.get(Calendar.DAY_OF_MONTH) + " " +
+			targetDate.get(Calendar.HOUR_OF_DAY) + ":" +
+			targetDate.get(Calendar.MINUTE) + ":" +
+			targetDate.get(Calendar.SECOND));
 	}
 
 }

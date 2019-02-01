@@ -4,6 +4,7 @@
 
 class Outer
 {
+	private static final int TEST_CODE = 0x5;
 	int x = 3;
 	class Inner
 	{
@@ -14,6 +15,7 @@ class Outer
 			System.out.println("innner:x "+x);
 			System.out.println("innner:this.x "+this.x);
 			System.out.println("innner:Outer.this.x "+Outer.this.x);
+			System.out.println("innner:Outer::TEST_CODE "+TEST_CODE);
 		}
 	}
 	
