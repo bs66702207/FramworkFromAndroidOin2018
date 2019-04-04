@@ -13,6 +13,7 @@ public class HashMaps {
   map.put("b", "bbb");
   map.put("c", "ccc");
   map.put("d", "ddd");
+  map.put("d", "ddde");
 
   Iterator<String> iterator = map.keySet().iterator();
   while (iterator.hasNext()) {

@@ -26,6 +26,10 @@ class OneArray
 		x = null;
 		
 		System.out.println(y[0]);
+
+        long ll = 90802;
+        ll = ll / 337;
+        System.out.println(ll);
 	
 		/*for(int x=0; x<5; x++)
 		{
