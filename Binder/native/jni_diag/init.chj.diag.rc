@@ -1,0 +1,2 @@
+on boot
+    mkdir /persist/chjdiag 0770 system system
