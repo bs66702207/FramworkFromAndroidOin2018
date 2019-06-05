@@ -1111,23 +1111,21 @@ app_process: frameworks\base\cmds\app_process\app_main.cpp
 使用app_process来启动server进程,
 它会先创建子线程:
 AppRuntime::onStarted()
-		proc->startThreadPool();
-						spawnPooledThread(true);
-								sp<Thread> t = new PoolThread(isMain);
-								t->run(name.string());
-										// 它会创建子线程, 并执行threadLoop
-										   IPCThreadState::self()->joinThreadPool(mIsMain);
-										   {
-													do {
-																	result = getAndExecuteCommand();
-																							result = talkWithDriver();
-																							result = executeCommand(cmd);
-																													对于BR_TRANSACTION数据,
-																													sp<BBinder> b((BBinder*)tr.cookie);
-																													error = b->transact(tr.code, buffer, &reply, tr.flags);
-										   	  } while(...)
-										   }
-
+    proc->startThreadPool();
+        spawnPooledThread(true);
+            sp<Thread> t = new PoolThread(isMain);
+            t->run(name.string());
+                // 它会创建子线程, 并执行threadLoop
+                IPCThreadState::self()->joinThreadPool(mIsMain);
+                {
+                    do {
+                        result = getAndExecuteCommand();
+			result = talkWithDriver();
+			result = executeCommand(cmd);
+                        对于BR_TRANSACTION数据,sp<BBinder> b((BBinder*)tr.cookie);
+                        error = b->transact(tr.code, buffer, &reply, tr.flags);
+                    } while(...)
+                }
 
 6.2 server读到数据后怎么调用服务PRC层的onTransact函数
 a. 在addService时设置.ptr/.cookie
@@ -1160,28 +1158,28 @@ a.4 IHelloService.Stub中定义的onTransact函数(JAVA):
 源码阅读：
 a.1 ServiceManager.addService("hello", new HelloService());
     ServiceManagerProxy.addService:
-    		// Parcel.java
-    		data.writeStrongBinder(service);
-    						nativeWriteStrongBinder(mNativePtr, val); // val = service = new HelloService()
-    						它是一个JNI调用，对应android_os_Parcel_writeStrongBinder(c++)
+        // Parcel.java
+        data.writeStrongBinder(service);
+            nativeWriteStrongBinder(mNativePtr, val); // val = service = new HelloService()
+            它是一个JNI调用，对应android_os_Parcel_writeStrongBinder(c++)
 
 a.2 android_os_Parcel_writeStrongBinder(c++)
     它会构造一个JavaBBinder对象(c++)，.mObject=new HelloService() JAVA对象
     然后让.cookie=JavaBBinder对象(c++)
-    
+
     // 把Java Parcel转换为c++ Parcel
     Parcel* parcel = reinterpret_cast<Parcel*>(nativePtr);
-    
+
     // .cookie = ibinderForJavaObject(env, object)得到一个JavaBBinder对象
     parcel->writeStrongBinder(ibinderForJavaObject(env, object))
 
 a.3 ibinderForJavaObject(env, object) //object = new HelloService() 
     把一个Java对象(new HelloService())转换为c++ IBinder对象
-    
+
     JavaBBinderHolder* jbh = (JavaBBinderHolder*)env->GetLongField(obj, gBinderOffsets.mObject);
     return jbh != NULL ? jbh->get(env, obj) : NULL;
-    											     b = new JavaBBinder(env, obj); // obj = new HelloService() 
-    											                 mObject = new HelloService() 
+    b = new JavaBBinder(env, obj); // obj = new HelloService() 
+    mObject = new HelloService() 
 
 
 a.4 从驱动中得过了.cookie, 它是一个JavaBBinder对象
@@ -1189,17 +1187,17 @@ a.4 从驱动中得过了.cookie, 它是一个JavaBBinder对象
     
     JavaBBinder::onTransact (调用java里的某个函数)
     
-    		// mObject指向 HelloService对象
-    		// gBinderOffsets.mExecTransact指向: java Binder类中的execTransact方法
-    		// 调用HelloService(派生自Binder)对象中的execTransact方法
+        // mObject指向 HelloService对象
+        // gBinderOffsets.mExecTransact指向: java Binder类中的execTransact方法
+        // 调用HelloService(派生自Binder)对象中的execTransact方法
         jboolean res = env->CallBooleanMethod(mObject, gBinderOffsets.mExecTransact,
             code, reinterpret_cast<jlong>(&data), reinterpret_cast<jlong>(reply), flags);
 
 a.5 java Binder execTransact:  
-				res = onTransact(code, data, reply, flags);
-									调用HelloService中的onTransact方法(来自IHelloService.Stube)
-									    分辨数据
-									    调用sayhello/sayhello_to
+    res = onTransact(code, data, reply, flags);
+    调用HelloService中的onTransact方法(来自IHelloService.Stube)
+    分辨数据
+    调用sayhello/sayhello_to
 		
 7. 回看SystemServer_硬件访问服务及课后作业
 
