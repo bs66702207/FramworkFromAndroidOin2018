@@ -8,6 +8,8 @@ class Demo extends Thread
 {
 	public void run()
 	{
+		int y =0;
+		y = 1/0;
 		for(int x=0; x<60; x++)
 		System.out.println("demo run---"+x);
 	}
@@ -25,5 +27,8 @@ class ThreadFirstMethod
 			
 		Thread t = new Thread();
 		t.start();
+		while(true) {
+			System.out.println("1");
+		}
 	}
 }
