@@ -40,7 +40,7 @@ PS: 启动阶段，smc的中断向量的注册，从核Secondary CPUs配置，TZ
 
 //3 ext4
 ext4文件系统有data block组成，通过超级块可以知道
-data blcok一般是4K("block_size")，这些data block组成块组；
+data block一般是4K("block_size")，这些data block组成块组；
 inode大小256字节("inode_size")；
 每个块组的inode数量 "inodes_per_group"；
 每个块组可以存放多少个块组描述符 "block_group_desc_group"；
@@ -162,4 +162,4 @@ c的d次方 ≡ m (mod n)，计算得出m=65
 
 
 
-I started working in twenty thirteen. Four years safety experience. Two years power experience. My first job is yongxin shibo research and development center, my main contribution is porting hardware module cipher driver to our TEE os. My second job is smartisan technology company bsp department, my main contribution is the research of ext four safe delete and power feature core function coding. My recent work is chehejia company and responsible for Android car power management.
+I started working in twenty thirteen. Four years safety experience. Two years power experience. My first job is yongxin shibo research and development center, my main contribution is porting hardware module cipher driver to our TEE os. My second job is smartisan technology company bsp department, my main contribution is the research of ext four safe delete and power feature core function coding. My recent work is chehejia company and responsible for Android car power managerment.

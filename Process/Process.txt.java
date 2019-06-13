@@ -1,6 +1,6 @@
 //三种查看UID的方法
 //1
-M01_AE:/ # dumpsys package com.android.car | grep userId                                                                                                              
+M01_AE:/ # dumpsys package com.android.car | grep userId
     userId=1000
     userId=1000
 //2
