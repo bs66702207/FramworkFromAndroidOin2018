@@ -153,7 +153,69 @@ void InOrder(Node* root) {
 
 }
 
+/*
+      1
+   2     3
+ 4   5
+8 9 6 7
+*/
+
+/**
+PosOrder: 8
+PosOrder: 9
+PosOrder: 4
+PosOrder: 6
+PosOrder: 7
+PosOrder: 5
+PosOrder: 2
+PosOrder: 3
+PosOrder: 1
+*/
+
+/**
+后序是左、右、中，计数栈就是0和1的标记，为了出栈判断用的
+1) 1 2 4 8 入sNode，0 0 0 0 入sInt
+2) 8->left == null，8->right == null, sInt{0 0 0 1}，所以8出栈，此时sNode{1 2 4} sInt{0 0 0}
+3)继续遍历右节点，栈顶4->right == 9，9入栈，sNode{1 2 4 9}，sInt{0 0 1 0}，因为9没有左孩子，也没有右孩子，sInt{0 0 1 1}，所以9出栈，此时sNode{1 2 4}，sInt{0 0 1}，然后4出栈，此时sNode{1 2} sInt{0 0}
+4) 继续遍历右节点，栈顶2->right == 5，5入栈，sNode{1 2 5}，sInt{0 1 0}，5->left == 6，所以sNode{1 2 5 6}，sInt{0 1 0 0}，由于6没有左右孩子，sNode{1 2 5 6}，sInt{0 1 0 1}，6出栈，sNode{1 2 5}，sInt{0 1 0}
+5) 继续遍历右节点，5->right == 7，sNode{1 2 5 7}，sInt{0 1 1 0}，7没有左右孩子，所以7出栈，5出栈，2出栈，此时sNode{1}，sInt{0}
+6) 继续遍历右节点，sNode{1}，sInt{1}，1->right == 3，sNode{1 3}，sInt{1 0}，由于3没有左右孩子，3出栈，最后1出栈
+*/
+
 void PosOrder(Node* root) {
+    //节点栈
+    stack<Node*> sNode;
+    //计数栈
+    stack<int> sInt;
+    //标志位
+    int count = 1;
+    //开始一撇
+    while(root != NULL || !sNode.empty()) {
+        while(root != NULL) {
+            //1. root第一次被访问，同步计数栈为0;
+            sNode.push(root);
+            sInt.push(0);
+            root = root->left;
+        }
+        //栈元素不为null，并且计数栈栈顶元素为1，此时是第三次被访问到，
+        while(!sNode.empty() && sInt.top() == count) {
+            //计数栈元素移除
+            sInt.pop();
+            //获取遍历元素
+            cout << "PosOrder: " << sNode.top()->value << endl;
+            sNode.pop();
+        }
+        //准备遍历右节点
+        if(!sNode.empty()) {
+            //2. root被pop时，是第二次被访问到，同步计数栈为1
+            sInt.pop();//移除元素0
+            sInt.push(1);
+            //查看栈顶元素(但不移除)回到节点
+            root = sNode.top();
+            //准备一捺
+            root = root->right;
+        }
+    }
 }
 
 
