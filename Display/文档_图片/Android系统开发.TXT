@@ -2016,11 +2016,11 @@ c.2  继续修改  hardware\libhardware\modules\gralloc\Framebuffer.cpp
 resize程序的错误解决:
 http://www.aichengxu.com/android/8815305.htm
 
-最终源码:   
+最终源码:
    git clone https://github.com/weidongshan/APP_0010_SurfaceTest.git
 	或
    git clone https://git.coding.net/weidongshan/APP_0010_SurfaceTest.git
-	
+
    更新:
    git pull origin
 
