@@ -3,6 +3,8 @@
 #include <map>
 using namespace std;
 
+//C++中map是根据红黑树来实现的
+
 //访问操作
 void visit_map() {
     map<int, int> T;
