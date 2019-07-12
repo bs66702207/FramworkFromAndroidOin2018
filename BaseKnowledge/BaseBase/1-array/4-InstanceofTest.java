@@ -6,7 +6,16 @@ class InstanceofTest
 	{
 		int i = 1;
 		Object o = i;
-		System.out.println(o instanceof Integer);
-		System.out.println(o instanceof Integer[]);
+		if(o instanceof Integer)
+			System.out.println("o instanceof Integer");
+		if(o instanceof Integer[])
+			System.out.println("o instanceof Integer[]");
+		Integer[] j = new Integer[1];
+		Object oo = j;
+		if(oo instanceof Integer)
+			System.out.println("oo instanceof Integer");
+		if(oo instanceof Integer[])
+			System.out.println("oo instanceof Integer[]");
+
 	}
 }

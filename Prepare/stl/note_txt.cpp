@@ -17,3 +17,12 @@
 
 4. set
    底层数据结构为红黑树，与map不同的是，value就是作为key进行排序
+
+5. hash_set
+   底层数据结构为hash表，无序，不重复，hash_map是set的一个扩展，可以见目录../Java/HashMap/的分析
+
+6. multiXXX
+   set和multiset会根据特定的排序原则将元素排序。两者不同之处在于，multiset允许元素重复，而set不允许重复。
+   multimap 底层数据结构为红黑树，有序，可重复
+   hash_multiset 底层数据结构为hash表，无序，可重复
+   hash_multimap 底层数据结构为hash表，无序，可重复
