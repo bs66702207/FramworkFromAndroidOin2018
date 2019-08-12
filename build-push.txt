@@ -9,7 +9,6 @@ adb push out/target/product/colombo/system/framework/framework-smartisanos-res/f
 adb shell rm -r /data/dalvik-cache
 adb reboot
 
-
 make -j4 core-all core-oj core-libart //libcore 
 push-libcore() {
 adb push ~/new-disk/workspace/source_codes/trident/dvt/1.rom/out/target/product/trident/system/framework/framework.jar /system/framework/framework.jar
