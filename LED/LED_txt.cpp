@@ -131,20 +131,6 @@ git checkout v1 //在google上下载lights.c修改为lights_sony.c，在它基�
 
 lights.h
 struct light_state_t {
-    /**
-     * The color of the LED in ARGB.
-     *
-     * Do your best here.
-     *   - If your light can only do red or green, if they ask for blue,
-     *     you should do green.
-     *   - If you can only do a brightness ramp, then use this formula:
-     *      unsigned char brightness = ((77*((color>>16)&0x00ff))
-     *              + (150*((color>>8)&0x00ff)) + (29*(color&0x00ff))) >> 8;
-     *   - If you can only do on or off, 0 is off, anything else is on.
-     *
-     * The high byte should be ignored.  Callers will set it to 0xff (which
-     * would correspond to 255 alpha).
-     */
     unsigned int color;// 把灯设为什么颜色, 或 把LCD的亮度设为什么
 
     int flashMode; // 是否闪烁, LIGHT_FLASH_NONE表示不闪，这个时候color表示是亮还是灭，亮的颜色是什么
@@ -224,9 +210,233 @@ public void updateLightsLocked() {
     }
 }
 
+/***** 5 通知灯使用分析 *****/
 
+frameworks/base/services/core/java/com/android/server/notification/NotificationManagerService.java
+private Light mNotificationLight;
+void init(...) {
+    mNotificationLight = lightsManager.getLight(LightsManager.LIGHT_ID_NOTIFICATIONS);
+}
+void updateLightsLocked()//对于通知灯的所有操作都是通过这个函数实现的，由于有很多地方调用，为了便于分析，我们从APP调用的接口查起
 
+NotificationManager nm = ( NotificationManager ) getSystemService( NOTIFICATION_SERVICE );
+Notification notif = new Notification();
+notif.ledARGB = 0xFFff0000;
+notif.flags = Notification.FLAG_SHOW_LIGHTS;
+notif.ledOnMS = 100;
+notif.ledOffMS = 100;
+nm.notify(LED_NOTIFICATION_ID, notif);
+  -> ... -> service.enqueueNotificationWithTag(pkg, mContext.getOpPackageName(), tag, id, copy, user.getIdentifier());
+    -> enqueueNotificationInternal(pkg, opPkg, Binder.getCallingUid(), Binder.getCallingPid(), tag, id, notification, userId);
+      -> mHandler.post(new EnqueueNotificationRunnable(userId, r));
+        -> mHandler.post(new PostNotificationRunnable(r.getKey()));
+          -> buzzBeepBlinkLocked(r);//r里面有Notification成员
+void buzzBeepBlinkLocked(NotificationRecord record) {
+...
+    if (record.getLight() != null && aboveThreshold && ((record.getSuppressedVisualEffects() & SUPPRESSED_EFFECT_LIGHTS) == 0)) {//如果是闪灯的话
+        updateLightsLocked();
+}
+void updateLightsLocked() {
+    if (ledNotification == null || mInCall || mScreenOn) {//当我们正在通话或者亮屏时，不会起作用的，直接关闭通知灯
+            mNotificationLight.turnOff();
+    } else {//那么只有在黑屏的情况下
+        NotificationRecord.Light light = ledNotification.getLight();//里面有颜色，时间值等
+        mNotificationLight.setFlashing(light.color, Light.LIGHT_FLASH_TIMED, light.onMs, light.offMs);
+    }
+}
 
+实验
+git clone https://github.com/weidongshan/APP_0002_LIGHTDemo.git
+git pull origin
+git checkout v1 //黑屏下测试，黑屏之前点击按钮20s后开始运行
 
+通知灯使用过程:
+a. SystemServer.java : 注册Notification服务
+b. app的上下文context里有静态块，它会注册服务: registerService(NOTIFICATION_SERVICE)
+c. app: nm = getSystemService
+d. 构造Notification
+e. 设置参数: 通知类型、颜色、时间
+f. nm.notify
+   f.1 getService 得到的是 "SystemServer注册的Notification服务"
+   f.2 最终判断通知类型进而调用到通知灯的JNI函数
 
+/***** 6 背光灯使用分析 *****/
 
+//frameworks/base/services/core/java/com/android/server/display/DisplayManagerService.java
+DisplayBlanker blanker = new DisplayBlanker() {//实例化DisplayBlanker
+    @Override
+    public void requestDisplayState(int state, int brightness) {
+        // The order of operations is important for legacy reasons.
+        if (state == Display.STATE_OFF) {
+            requestGlobalDisplayStateInternal(state, brightness);
+        }
+
+        callbacks.onDisplayStateChange(state);
+
+        if (state != Display.STATE_OFF) {
+            requestGlobalDisplayStateInternal(state, brightness);
+        }
+    }
+};
+mDisplayPowerController = new DisplayPowerController(mContext, callbacks, handler, sensorManager, blanker);
+
+//frameworks/base/services/core/java/com/android/server/display/DisplayPowerController.java
+private DisplayPowerState mPowerState;//利用这个实例调节背光
+private void initialize() {
+    mPowerState = new DisplayPowerState(mBlanker, mColorFadeEnabled ? new ColorFade(Display.DEFAULT_DISPLAY) : null);
+}
+
+//frameworks/base/services/core/java/com/android/server/display/DisplayPowerState.java
+private final PhotonicModulator mPhotonicModulator;
+public DisplayPowerState(DisplayBlanker blanker, ColorFade colorFade) {
+    mBlanker = blanker;
+    mPhotonicModulator = new PhotonicModulator();
+    mPhotonicModulator.start();//启动PhotonicModulator的run()
+}
+
+//frameworks/base/services/core/java/com/android/server/display/DisplayPowerState.java
+private final class PhotonicModulator extends Thread {
+
+    public boolean setState(int state, int backlight) {
+        mLock.notifyAll();
+    }
+
+    public void run() {//在这个里面调节
+        for (;;) {
+            mLock.wait();
+            mBlanker.requestDisplayState(state, backlight);//又回到DisplayManagerService里的requestDisplayState
+        }
+    }   
+}
+
+//frameworks/base/services/core/java/com/android/server/display/DisplayManagerService.java
+private void requestGlobalDisplayStateInternal(int state, int brightness) {
+    if (state == Display.STATE_UNKNOWN) {
+        state = Display.STATE_ON;
+    }
+    if (state == Display.STATE_OFF) {
+        brightness = PowerManager.BRIGHTNESS_OFF;
+    } else if (brightness < 0) {
+        brightness = PowerManager.BRIGHTNESS_DEFAULT;
+    } else if (brightness > PowerManager.BRIGHTNESS_ON) {
+        brightness = PowerManager.BRIGHTNESS_ON;
+    }
+
+    synchronized (mTempDisplayStateWorkQueue) {
+        try {
+                mGlobalDisplayState = state;
+                mGlobalDisplayBrightness = brightness;
+                applyGlobalDisplayStateLocked(mTempDisplayStateWorkQueue);//我们只关心背光部分
+        }
+    }
+}
+
+applyGlobalDisplayStateLocked
+  -> updateDisplayStateLocked
+    -> requestDisplayStateLocked
+//frameworks/base/services/core/java/com/android/server/display/LocalDisplayAdapter.java
+public Runnable requestDisplayStateLocked(final int state, final int brightness) {
+    mBacklight.setBrightness(brightness);
+
+}
+
+查找一下PhotonicModulator里面的setState
+    setState <- mHandler.post(mScreenUpdateRunnable) <- postScreenUpdateThreadSafe <- scheduleScreenUpdate
+我们发现scheduleScreenUpdate在四个地方被用到
+1. 构造DisplayPowerState时
+2. setScreenState //设置mScreenState和mScreenReady
+3. setScreenBrightness //设置mScreenBrightness和mScreenReady
+4. setColorFadeLevel //设置mColorFadeReady和mScreenReady
+    然后通过scheduleScreenUpdate来处理这些变量
+
+那么是谁来触发这些方法的调用呢，我们从入口查找/*PowerManagerService*/
+frameworks/base/services/core/java/com/android/server/power/PowerManagerService.java
+里面注册了4个Receiver，1个ContentObserver(APP可以修改里面的变量)，最终都会调用updatePowerStateLocked
+在Phase 3里面更新显示电源状态，我们只关心这块
+private void updatePowerStateLocked() 
+  -> updateDisplayPowerStateLocked(dirtyPhase2);
+    -> mDisplayManagerInternal.requestPowerState(mDisplayPowerRequest, mRequestWaitForNegativeProximity);
+//frameworks/base/services/core/java/com/android/server/display/DisplayManagerService.java
+private final class LocalService extends DisplayManagerInternal {
+    @Override
+    public boolean requestPowerState(DisplayPowerRequest request, boolean waitForNegativeProximity) {
+        synchronized (mSyncRoot) {
+            return mDisplayPowerController.requestPowerState(request, waitForNegativeProximity);
+        }
+    }
+}
+//frameworks/base/services/core/java/com/android/server/display/DisplayPowerController.java
+public boolean requestPowerState(DisplayPowerRequest request, boolean waitForNegativeProximity) {
+    sendUpdatePowerStateLocked();//send MSG_UPDATE_POWER_STATE
+}
+
+public void handleMessage(Message msg) {
+    switch (msg.what) {
+        case MSG_UPDATE_POWER_STATE:
+            updatePowerState();
+            break;
+
+private void updatePowerState() {
+    if (initialRampSkip || hasBrightnessBuckets
+           || wasOrWillBeInVr || !isDisplayContentVisible || brightnessIsTemporary) {
+       animateScreenBrightness(brightness, 0);
+    } else { 
+       animateScreenBrightness(brightness,
+               slowChange ? mBrightnessRampRateSlow : mBrightnessRampRateFast);
+    }
+}
+
+mScreenBrightnessRampAnimator = new RampAnimator<DisplayPowerState>(mPowerState, DisplayPowerState.SCREEN_BRIGHTNESS);
+
+animateScreenBrightness
+  -> mScreenBrightnessRampAnimator.animateTo(target, rate)//动画渐变的方式改变，以xx频率慢慢的调整过去
+    -> Property.setValue(mObject, target);
+
+public static final IntProperty<DisplayPowerState> SCREEN_BRIGHTNESS =
+        new IntProperty<DisplayPowerState>("screenBrightness") {
+    @Override
+    public void setValue(DisplayPowerState object, int value) {
+        object.setScreenBrightness(value);
+    }
+
+    @Override
+    public Integer get(DisplayPowerState object) {
+        return object.getScreenBrightness();
+    }
+};
+
+实验
+你可以参考android-er.blogspot.com/2011/02/change-system-screen-brightness-using.html来编写测试程序
+git clone https://github.com/weidongshan/APP_0002_LIGHTDemo.git
+git pull origin
+git checkout v2  //v2, control backlight
+
+但是程序会崩溃，网上查了下，虽然在xml里声明了写权限，但是还是需要在设置里面把它修改背光成员值的权限打开
+自动调解背光使能的话，在用手滑动
+
+下面我们看下系统设置里面的背光调解代码Setting -> Dispaly -> Brightness level : BrightnessDialog.java
+//frameworks/base/packages/SystemUI/src/com/android/systemui/settings/BrightnessDialog.java
+final ToggleSliderView slider = findViewById(R.id.brightness_slider);
+mBrightnessController = new BrightnessController(this, icon, slider);
+mBrightnessController.registerCallbacks();
+//frameworks/base/packages/SystemUI/src/com/android/systemui/settings/BrightnessController.java
+registerCallbacks
+ -> mBackgroundHandler.post(mStartListeningRunnable);
+   -> {
+            mBrightnessObserver.startObserving();
+            mUpdateModeRunnable.run();
+            mUpdateSliderRunnable.run();
+            mHandler.sendEmptyMessage(MSG_ATTACH_LISTENER); -> mControl.setOnChangedListener(BrightnessController.this);//假设滑动了滑动块会导致onChanged调用
+      }
+
+public void onChanged(ToggleSlider toggleSlider, boolean tracking, boolean automatic, int value, boolean stopTracking) {
+    setBrightness(val);//滑动过程中，直接setBrightness，mDisplayManager.setTemporaryBrightness(brightness)，最终导致updatePowerState调用
+    if (!tracking) {//如果松手了，那么就写到数据库里
+        AsyncTask.execute(new Runnable() {
+            public void run() {
+                Settings.System.putIntForUser(mContext.getContentResolver(),
+                        setting, val, UserHandle.USER_CURRENT);//也会导致updatePowerState调用
+            }
+        });
+    }
+}
