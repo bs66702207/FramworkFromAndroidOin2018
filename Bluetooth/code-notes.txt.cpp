@@ -145,3 +145,6 @@ btstack_chipset_intel_download_firmware(hci_transport_usb_instance(), &intel_fir
 1. 涉及打牌广播包，主设备发起连接请求，从设备响应连接请求，随机数是固定的
 2. 通过数据包LLID位来确认是LL层处理的数据，还是需要LL层继续往上传递，L2CAP
 3. 信道的自适应调频算法，通过取模运算，来找到可用的channel
+
+第13节_BLE协议HCI层的数据格式
+13_btstack.pklg -- 空中数据包
